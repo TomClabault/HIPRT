@@ -113,7 +113,8 @@ class Context
 		const std::vector<hiprtFuncNameSet>& funcNameSets,
 		std::vector<oroFunction>&			 functions,
 		oroModule&							 module,
-		bool								 cache );
+		bool								 cache,
+	    const std::string&					 additional_cache_key = "");
 
 	void buildKernelsFromBitcode(
 		const std::vector<const char*>&		 funcNames,
