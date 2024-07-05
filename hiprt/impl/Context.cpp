@@ -866,7 +866,8 @@ void Context::buildKernels(
 	const std::vector<hiprtFuncNameSet>& funcNameSets,
 	std::vector<oroFunction>&			 functions,
 	oroModule&							 module,
-	bool								 cache )
+	bool								 cache,
+	const std::string&					 additional_cache_key)
 {
 	checkOro( oroCtxSetCurrent( m_ctxt ) );
 	m_compiler.buildKernels(
@@ -883,7 +884,8 @@ void Context::buildKernels(
 		functions,
 		module,
 		true,
-		cache );
+		cache,
+		additional_cache_key);
 }
 
 void Context::buildKernelsFromBitcode(
