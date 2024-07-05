@@ -613,22 +613,23 @@ hiprtError hiprtExportSceneAabb( hiprtContext context, hiprtScene scene, hiprtFl
 }
 
 hiprtError hiprtBuildTraceKernels(
-	hiprtContext	  context,
-	uint32_t		  numFunctions,
-	const char**	  funcNamesIn,
-	const char*		  src,
-	const char*		  moduleName,
-	uint32_t		  numHeaders,
-	const char**	  headersIn,
-	const char**	  includeNamesIn,
-	uint32_t		  numOptions,
-	const char**	  optionsIn,
-	uint32_t		  numGeomTypes,
-	uint32_t		  numRayTypes,
-	hiprtFuncNameSet* funcNameSetsIn,
-	hiprtApiFunction* functionsOut,
-	hiprtApiModule*	  moduleOut,
-	bool			  cache )
+	hiprtContext		context,
+	uint32_t			numFunctions,
+	const char**		funcNamesIn,
+	const char*			src,
+	const char*			moduleName,
+	uint32_t			numHeaders,
+	const char**		headersIn,
+	const char**		includeNamesIn,
+	uint32_t			numOptions,
+	const char**		optionsIn,
+	uint32_t			numGeomTypes,
+	uint32_t			numRayTypes,
+	hiprtFuncNameSet*	funcNameSetsIn,
+	hiprtApiFunction*	functionsOut,
+	hiprtApiModule*		moduleOut,
+	bool				cache,
+	const std::string&	additional_cache_key)
 {
 	if ( !context || moduleName == nullptr || src == nullptr ||
 		 ( ( funcNamesIn == nullptr || functionsOut == nullptr || numFunctions == 0 ) && moduleOut == nullptr ) )
@@ -674,7 +675,8 @@ hiprtError hiprtBuildTraceKernels(
 			funcNameSets,
 			functions,
 			module,
-			cache );
+			cache,
+			additional_cache_key);
 
 		for ( uint32_t i = 0; i < numFunctions; ++i )
 			functionsOut[i] = reinterpret_cast<hiprtApiFunction>( functions[i] );

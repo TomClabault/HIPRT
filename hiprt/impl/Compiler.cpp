@@ -203,7 +203,8 @@ void Compiler::buildKernels(
 	std::vector<oroFunction>&			 functions,
 	oroModule&							 module,
 	bool								 extended,
-	bool								 cache )
+	bool								 cache,
+	std::string							 additional_cache_key)
 {
 	if ( !std::filesystem::exists( m_cacheDirectory ) && !std::filesystem::create_directory( m_cacheDirectory ) )
 		throw std::runtime_error( "Cannot create cache directory" );
@@ -216,7 +217,7 @@ void Compiler::buildKernels(
 	}
 	else
 	{
-		std::string cacheName = getCacheFilename( context, src, moduleName, options, funcNameSets, numGeomTypes, numRayTypes );
+		std::string cacheName = getCacheFilename( context, src, moduleName, options, funcNameSets, numGeomTypes, numRayTypes, additional_cache_key );
 		bool		upToDate  = isCachedFileUpToDate( m_cacheDirectory / cacheName, moduleName );
 
 		orortcProgram prog;
@@ -612,7 +613,8 @@ std::string Compiler::getCacheFilename(
 	std::optional<std::vector<const char*>>		 options,
 	std::optional<std::vector<hiprtFuncNameSet>> funcNameSets,
 	uint32_t									 numGeomTypes,
-	uint32_t									 numRayTypes )
+	uint32_t									 numRayTypes,
+	const std::string&							 additional_cache_key)
 {
 	std::string driverVersion = context.getDriverVersion();
 	std::string deviceName	  = context.getDeviceName();
@@ -635,6 +637,8 @@ std::string Compiler::getCacheFilename(
 			}
 		}
 	}
+
+	optionHash += additional_cache_key;
 
 	if ( options )
 	{
