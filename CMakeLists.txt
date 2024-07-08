@@ -278,6 +278,8 @@ set(HIPRT_NAME "hiprt${version_str_}")
 
 # Project: HIPRT
 add_library(${HIPRT_NAME} SHARED)
+#add_library(hiprtLib INTERFACE)
+#target_link_libraries(hiprtLib INTERFACE ${HIPRT_NAME})
 
 target_compile_definitions(${HIPRT_NAME} PRIVATE HIPRT_EXPORTS)
 
