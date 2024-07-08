@@ -241,7 +241,7 @@ add_definitions(-D__USE_HIP__)
 
 
 # Enable CUDA if possible
-include(${CMAKE_SOURCE_DIR}/contrib/Orochi/Orochi/enable_cuew.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/contrib/Orochi/Orochi/enable_cuew.cmake)
 
 
 
@@ -270,8 +270,8 @@ endif()
 
 # Write version info
 set(version_str_ "UNDEF")
-write_version_info("${CMAKE_SOURCE_DIR}/hiprt/hiprt.h.in" "${CMAKE_SOURCE_DIR}/hiprt/hiprt.h" "${CMAKE_SOURCE_DIR}/version.txt" version_str_)
-write_version_info("${CMAKE_SOURCE_DIR}/hiprt/hiprtew.h.in" "${CMAKE_SOURCE_DIR}/hiprt/hiprtew.h" "${CMAKE_SOURCE_DIR}/version.txt" version_str_)
+write_version_info("${CMAKE_CURRENT_SOURCE_DIR}/hiprt/hiprt.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/hiprt/hiprt.h" "${CMAKE_CURRENT_SOURCE_DIR}/version.txt" version_str_)
+write_version_info("${CMAKE_CURRENT_SOURCE_DIR}/hiprt/hiprtew.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/hiprt/hiprtew.h" "${CMAKE_CURRENT_SOURCE_DIR}/version.txt" version_str_)
 
 
 set(HIPRT_NAME "hiprt${version_str_}")
@@ -309,13 +309,13 @@ endif()
 if(PRECOMPILE)
 	execute_process(
 		COMMAND python compile.py --nvidia --hipSdkPath ${HIP_PATH}
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/scripts/bitcodes
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/bitcodes
 		)
 
 	if(NOT NO_UNITTEST)
 		execute_process(
 			COMMAND python precompile_bitcode.py --nvidia --hipSdkPath ${HIP_PATH}
-			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/scripts/bitcodes
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/bitcodes
 			)
 	endif()
 
@@ -325,16 +325,31 @@ endif()
 if(BAKE_KERNEL OR BITCODE)
 	message(">> BakeKernel Executed")
 	if(WIN32)
-		execute_process(COMMAND mkdir -p ${CMAKE_SOURCE_DIR}/hiprt/cache)
-		execute_process(COMMAND ${CMAKE_SOURCE_DIR}/tools/bakeKernel.bat)
+		execute_process(
+			COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/hiprt/cache
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+			)
+		execute_process(
+			COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/bakeKernel.bat
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+			)
 	else()
-		execute_process(COMMAND mkdir -p ${CMAKE_SOURCE_DIR}/hiprt/cache)
-		execute_process(COMMAND ${CMAKE_SOURCE_DIR}/tools/bakeKernel.sh)
+		execute_process(
+			COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/hiprt/cache
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+			)
+		execute_process(
+			COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/bakeKernel.sh
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+			)
 	endif()
+
+
 
 	if(BAKE_KERNEL)
 		target_compile_definitions(${HIPRT_NAME} PRIVATE HIPRT_LOAD_FROM_STRING ORO_PP_LOAD_FROM_STRING)
 	endif()
+
 endif()
 
 if(WIN32)
@@ -342,12 +357,12 @@ if(WIN32)
 endif()
 
 
-target_include_directories(${HIPRT_NAME} PRIVATE ${CMAKE_SOURCE_DIR})
-target_include_directories(${HIPRT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/contrib/Orochi)
+target_include_directories(${HIPRT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${HIPRT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/contrib/Orochi)
 
-file(GLOB_RECURSE hiprt_sources "${CMAKE_SOURCE_DIR}/hiprt/*.h" "${CMAKE_SOURCE_DIR}/hiprt/*.cpp" "${CMAKE_SOURCE_DIR}/hiprt/*.inl")
+file(GLOB_RECURSE hiprt_sources "${CMAKE_CURRENT_SOURCE_DIR}/hiprt/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/hiprt/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/hiprt/*.inl")
 list(FILTER hiprt_sources EXCLUDE REGEX "hiprt/bitcodes/.*")
-file(GLOB_RECURSE orochi_sources "${CMAKE_SOURCE_DIR}/contrib/Orochi/Orochi/*.h" "${CMAKE_SOURCE_DIR}/contrib/Orochi/Orochi/*.cpp" "${CMAKE_SOURCE_DIR}/contrib/Orochi/contrib/cuew/*.h" "${CMAKE_SOURCE_DIR}/contrib/Orochi/contrib/cuew/*.cpp" "${CMAKE_SOURCE_DIR}/contrib/Orochi/contrib/hipew/*.h" "${CMAKE_SOURCE_DIR}/contrib/Orochi/contrib/hipew/*.cpp" "${CMAKE_SOURCE_DIR}/contrib/Orochi/ParallelPrimitives/*.h" "${CMAKE_SOURCE_DIR}/contrib/Orochi/ParallelPrimitives/*.cpp")
+file(GLOB_RECURSE orochi_sources "${CMAKE_CURRENT_SOURCE_DIR}/contrib/Orochi/Orochi/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/contrib/Orochi/Orochi/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/contrib/Orochi/contrib/cuew/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/contrib/Orochi/contrib/cuew/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/contrib/Orochi/contrib/hipew/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/contrib/Orochi/contrib/hipew/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/contrib/Orochi/ParallelPrimitives/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/contrib/Orochi/ParallelPrimitives/*.cpp")
 target_sources(${HIPRT_NAME} PRIVATE ${hiprt_sources} ${orochi_sources})
 
 
@@ -360,7 +375,7 @@ target_sources(${HIPRT_NAME} PRIVATE ${hiprt_sources} ${orochi_sources})
 install(TARGETS ${HIPRT_NAME} DESTINATION bin)
 
 # add header files
-file(GLOB HIPRT_HEADERS "${CMAKE_SOURCE_DIR}/hiprt/*.h")
+file(GLOB HIPRT_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/hiprt/*.h")
 install(FILES ${HIPRT_HEADERS}
 		DESTINATION include/hiprt)
 
@@ -392,40 +407,40 @@ if(NOT NO_UNITTEST)
 	endif()
 
 
-	target_include_directories(unittest PRIVATE ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/contrib/Orochi)
+	target_include_directories(unittest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/contrib/Orochi)
 	target_link_libraries(unittest PRIVATE ${HIPRT_NAME})
 
 	if(UNIX)
 		target_link_libraries(unittest PRIVATE pthread dl)
 	endif()
 
-	file(GLOB_RECURSE unittest_sources "${CMAKE_SOURCE_DIR}/test/hiprtT*.h" "${CMAKE_SOURCE_DIR}/test/hiprtT*.cpp" "${CMAKE_SOURCE_DIR}/test/shared.h" "${CMAKE_SOURCE_DIR}/test/main.cpp" "${CMAKE_SOURCE_DIR}/test/CornellBox.h" "${CMAKE_SOURCE_DIR}/test/kernels/*.h" "${CMAKE_SOURCE_DIR}/contrib/gtest-1.6.0/gtest-all.cc")
+	file(GLOB_RECURSE unittest_sources "${CMAKE_CURRENT_SOURCE_DIR}/test/hiprtT*.h" "${CMAKE_CURRENT_SOURCE_DIR}/test/hiprtT*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/test/shared.h" "${CMAKE_CURRENT_SOURCE_DIR}/test/main.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/test/CornellBox.h" "${CMAKE_CURRENT_SOURCE_DIR}/test/kernels/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/contrib/gtest-1.6.0/gtest-all.cc")
 
 
 	target_sources(unittest PRIVATE ${unittest_sources} ${orochi_sources})
 
-	target_include_directories(unittest PRIVATE ${CMAKE_SOURCE_DIR}/contrib/gtest-1.6.0 ${CMAKE_SOURCE_DIR}/contrib/embree/include)
+	target_include_directories(unittest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/contrib/gtest-1.6.0 ${CMAKE_CURRENT_SOURCE_DIR}/contrib/embree/include)
 
 
 	if(WIN32)
 
 		# Use target_link_directories to specify additional library directories
-		target_link_directories(unittest PRIVATE ${CMAKE_SOURCE_DIR}/contrib/embree/win)
-		target_link_directories(unittest PRIVATE ${CMAKE_SOURCE_DIR}/contrib/bin/win64)
+		target_link_directories(unittest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/contrib/embree/win)
+		target_link_directories(unittest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/contrib/bin/win64)
 
-		copy_dir(${CMAKE_SOURCE_DIR}/contrib/embree/win ${CMAKE_SOURCE_DIR}/dist/bin/Release "*.dll")
-		copy_dir(${CMAKE_SOURCE_DIR}/contrib/embree/win ${CMAKE_SOURCE_DIR}/dist/bin/Debug "*.dll")
-		copy_dir(${CMAKE_SOURCE_DIR}/contrib/Orochi/contrib/bin/win64 ${CMAKE_SOURCE_DIR}/dist/bin/Release "*.dll")
-		copy_dir(${CMAKE_SOURCE_DIR}/contrib/Orochi/contrib/bin/win64 ${CMAKE_SOURCE_DIR}/dist/bin/Debug "*.dll")
+		copy_dir(${CMAKE_CURRENT_SOURCE_DIR}/contrib/embree/win ${CMAKE_CURRENT_SOURCE_DIR}/dist/bin/Release "*.dll")
+		copy_dir(${CMAKE_CURRENT_SOURCE_DIR}/contrib/embree/win ${CMAKE_CURRENT_SOURCE_DIR}/dist/bin/Debug "*.dll")
+		copy_dir(${CMAKE_CURRENT_SOURCE_DIR}/contrib/Orochi/contrib/bin/win64 ${CMAKE_CURRENT_SOURCE_DIR}/dist/bin/Release "*.dll")
+		copy_dir(${CMAKE_CURRENT_SOURCE_DIR}/contrib/Orochi/contrib/bin/win64 ${CMAKE_CURRENT_SOURCE_DIR}/dist/bin/Debug "*.dll")
 
 		# Explicitly link libraries from contrib/embree/win and contrib/bin/win64
-		target_link_libraries(unittest PRIVATE ${CMAKE_SOURCE_DIR}/contrib/embree/win/embree4.lib)
+		target_link_libraries(unittest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/contrib/embree/win/embree4.lib)
 
 	endif()
 
 
 	if(UNIX)
-		target_link_directories(unittest PRIVATE ${CMAKE_SOURCE_DIR}/contrib/embree/linux)
+		target_link_directories(unittest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/contrib/embree/linux)
 	endif()
 
 	target_link_libraries(unittest PRIVATE embree4 tbb)
@@ -443,15 +458,15 @@ if(HIPRTEW)
 		target_link_libraries(hiprtewtest PRIVATE version)
 	endif()
 
-	target_include_directories(hiprtewtest PRIVATE ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/contrib/Orochi)
+	target_include_directories(hiprtewtest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/contrib/Orochi)
 	if(UNIX)
 		target_link_libraries(hiprtewtest PRIVATE pthread dl)
 	endif()
 
-	file(GLOB_RECURSE hiprtewtest_sources "${CMAKE_SOURCE_DIR}/test/hiprtewTest.h" "${CMAKE_SOURCE_DIR}/test/hiprtewTest.cpp" "${CMAKE_SOURCE_DIR}/contrib/gtest-1.6.0/gtest-all.cc")
+	file(GLOB_RECURSE hiprtewtest_sources "${CMAKE_CURRENT_SOURCE_DIR}/test/hiprtewTest.h" "${CMAKE_CURRENT_SOURCE_DIR}/test/hiprtewTest.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/contrib/gtest-1.6.0/gtest-all.cc")
 	target_sources(hiprtewtest PRIVATE ${hiprtewtest_sources} ${orochi_sources})
 
-	target_include_directories(hiprtewtest PRIVATE ${CMAKE_SOURCE_DIR}/contrib/gtest-1.6.0)
+	target_include_directories(hiprtewtest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/contrib/gtest-1.6.0)
 
 	target_compile_definitions(hiprtewtest PRIVATE GTEST_HAS_TR1_TUPLE=0)
 endif()
