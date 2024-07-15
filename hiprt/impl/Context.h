@@ -24,6 +24,7 @@
 
 #pragma once
 #include <Orochi/Orochi.h>
+#include <hiprt/hiprt.h>
 #include <hiprt/hiprt_types.h>
 #include <hiprt/impl/Compiler.h>
 #include <hiprt/impl/Error.h>
@@ -139,7 +140,7 @@ class Context
 	OrochiUtils& getOrochiUtils() { return m_oroutils; }
 	Compiler&	 getCompiler() { return m_compiler; }
 
-	bool enableHwi() const;
+	HIPRT_API bool enableHwi() const;
 
   private:
 	oroDevice	m_device;
