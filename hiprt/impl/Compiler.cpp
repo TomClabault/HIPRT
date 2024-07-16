@@ -441,8 +441,6 @@ void Compiler::addCommonOpts( Context& context, std::vector<const char*>& opts )
 	else
 		opts.push_back( "-ffast-math" );
 
-	if ( context.enableHwi() ) opts.push_back( "-D__USE_HWI__" );
-
 	opts.push_back( "-I../" );
 	opts.push_back( "-D__USE_HIP__" );
 	opts.push_back( "-std=c++17" );
