@@ -36,12 +36,12 @@
 #include <hiprt/impl/Scene.h>
 #include <hiprt/hiprt_device.h>
 
-#if __gfx1030__ || __gfx1031__ || __gfx1032__ || __gfx1033__ || __gfx1034__ || __gfx1035__ || __gfx1036__ || __gfx1100__ || \
-	__gfx1101__ || __gfx1102__ || __gfx1103__ || __gfx1150__ || __gfx1151__
-#ifndef __USE_HWI__
-#define __USE_HWI__
-#endif
-#endif
+//#if __gfx1030__ || __gfx1031__ || __gfx1032__ || __gfx1033__ || __gfx1034__ || __gfx1035__ || __gfx1036__ || __gfx1100__ || \
+//	__gfx1101__ || __gfx1102__ || __gfx1103__ || __gfx1150__ || __gfx1151__
+//#ifndef __USE_HWI__
+//#define __USE_HWI__
+//#endif
+//#endif
 
 #if defined( __USE_HWI__ )
 extern "C" __device__ float __ocml_native_recip_f32( float );
