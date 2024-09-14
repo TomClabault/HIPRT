@@ -43,7 +43,7 @@
 //#endif
 //#endif
 
-#if defined( __USE_HWI__ )
+#if defined( __USE_HWI__ ) && __USE_HWI__ == 1
 extern "C" __device__ float __ocml_native_recip_f32( float );
 #endif
 
@@ -244,12 +244,12 @@ class TraversalBase
 		: m_ray( ray ), m_stack( stack ), m_payload( payload ), m_rayType( rayType ), m_nodeIndex( RootIndex )
 	{
 		if ( funcTable != nullptr ) m_tableHeader = *reinterpret_cast<hiprtFuncTableHeader*>( funcTable );
-#if defined( __USE_HWI__ )
+#if defined( __USE_HWI__ ) && __USE_HWI__ == 1
 		packDescriptor( m_descriptor, nullptr, uint32_t( hint ) );
 #endif
 	}
 
-#if defined( __USE_HWI__ )
+#if defined( __USE_HWI__ ) && __USE_HWI__ == 1
 	HIPRT_DEVICE void packDescriptor(
 		uint4&		descriptor,
 		const void* nodes			 = nullptr,
@@ -285,7 +285,7 @@ class TraversalBase
 	hiprtTraversalState	 m_state = hiprtTraversalStateInit;
 };
 
-#if defined( __USE_HWI__ )
+#if defined( __USE_HWI__ ) && __USE_HWI__ == 1
 template <typename Stack>
 HIPRT_DEVICE void TraversalBase<Stack>::packDescriptor(
 	uint4&		descriptor,
@@ -319,7 +319,7 @@ template <typename Stack>
 HIPRT_DEVICE bool
 TraversalBase<Stack>::testInternalNode( const hiprtRay& ray, const float3& invD, BoxNode* nodes, uint32_t& nodeIndex )
 {
-#if !defined( __USE_HWI__ )
+#if !defined( __USE_HWI__ ) || __USE_HWI__ == 0
 	BoxNode node   = nodes[getNodeAddr( nodeIndex )];
 	float3	oxInvD = -ray.origin * invD;
 	float2	s0	   = node.m_box0.intersect( invD, oxInvD, ray.maxT );
@@ -380,7 +380,7 @@ HIPRT_DEVICE bool TraversalBase<Stack>::testTriangleNode(
 	const hiprtRay& ray, const float3& invD, const TriangleNode& node, TriangleNode* nodes, uint32_t leafIndex, hiprtHit& hit )
 {
 	bool hasHit = false;
-#if !defined( __USE_HWI__ )
+#if !defined( __USE_HWI__ ) || __USE_HWI__ == 0
 	hasHit = node.m_triPair.fetchTriangle( leafIndex & 1 )
 				 .intersect( ray, hit.uv, hit.t, node.m_flags >> ( ( leafIndex & 1 ) * 8 ) );
 	if ( hasHit )
@@ -436,7 +436,7 @@ class GeomTraversal : public TraversalBase<Stack>
 	using TraversalBase<Stack>::m_payload;
 	using TraversalBase<Stack>::m_nodeIndex;
 	using TraversalBase<Stack>::m_rayType;
-#if defined( __USE_HWI__ )
+#if defined( __USE_HWI__ ) && __USE_HWI__ == 1
 	using TraversalBase<Stack>::m_descriptor;
 #endif
 
@@ -631,7 +631,7 @@ class SceneTraversal : public TraversalBase<Stack>
 	using TraversalBase<Stack>::m_payload;
 	using TraversalBase<Stack>::m_nodeIndex;
 	using TraversalBase<Stack>::m_rayType;
-#if defined( __USE_HWI__ )
+#if defined( __USE_HWI__ ) && __USE_HWI__ == 1
 	using TraversalBase<Stack>::m_descriptor;
 #endif
 
