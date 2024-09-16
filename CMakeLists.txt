@@ -506,3 +506,10 @@ if(HIPRTEW)
 
 	target_compile_definitions(hiprtewtest PRIVATE GTEST_HAS_TR1_TUPLE=0)
 endif()
+
+if(MSVC_IDE)
+	# Enabling parallel compilation on MSVC which isn't enabled by default
+	if(MSVC)
+		add_definitions(/MP)
+	endif()
+endif()
