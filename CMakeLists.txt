@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(hiprt)
 
 # Options
+cmake_policy(SET CMP0077 NEW)
 option(BAKE_KERNEL "Enable the use of encrypted and baked kernels" OFF)
 option(BITCODE "Enable bitcode linking" OFF)
 option(PRECOMPILE "Precompile kernels" OFF)
@@ -315,8 +316,9 @@ if(BITCODE)
 	target_compile_definitions(${HIPRT_NAME} PRIVATE HIPRT_BITCODE_LINKING ORO_PRECOMPILED)
 endif()
 
+message("no encrpy:t " ${NO_ENCRYPT})
 if(NOT NO_ENCRYPT)
-	target_compile_definitions(${HIPRT_NAME} PRIVATE HIPRT_ENCRYPT )
+	target_compile_definitions(${HIPRT_NAME} PRIVATE HIPRT_ENCRYPT)
 	set(ENV{HIPRT_NO_ENCRYPT} "OFF")
 else()
 	set(ENV{HIPRT_NO_ENCRYPT} "ON")
