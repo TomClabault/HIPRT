@@ -210,12 +210,15 @@ void Compiler::buildKernels(
 		throw std::runtime_error( "Cannot create cache directory" );
 
 	std::lock_guard<std::mutex> lock( m_moduleMutex );
-	auto						cacheEntry = m_moduleCache.find( moduleName.string() );
+	// Commented from original code as this way of checking the cache does not account at all for kernel file modifications:
+	// if the kernel file was cached before (based on the name of the file only), then we pick up the file from the cache.
+	// This does not hold if the file was modified in between
+	/*auto						cacheEntry = m_moduleCache.find( moduleName.string() );
 	if ( cacheEntry != m_moduleCache.end() )
 	{
 		module = cacheEntry->second;
 	}
-	else
+	else*/
 	{
 		std::string cacheName = getCacheFilename( context, src, moduleName, options, funcNameSets, numGeomTypes, numRayTypes, additional_cache_key );
 		bool		upToDate  = isCachedFileUpToDate( m_cacheDirectory / cacheName, moduleName );
