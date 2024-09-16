@@ -20,7 +20,6 @@ else()
 	set(GENERATE_BAKE_KERNEL___DEFAULT OFF)
 endif()
 option(GENERATE_BAKE_KERNEL "generate the baked kernels" ${GENERATE_BAKE_KERNEL___DEFAULT})
-message(STATUS "GENERATE_BAKE_KERNEL= ${GENERATE_BAKE_KERNEL}")
 
 
 # Set C++ Standard
@@ -316,7 +315,6 @@ if(BITCODE)
 	target_compile_definitions(${HIPRT_NAME} PRIVATE HIPRT_BITCODE_LINKING ORO_PRECOMPILED)
 endif()
 
-message("no encrpy:t " ${NO_ENCRYPT})
 if(NOT NO_ENCRYPT)
 	target_compile_definitions(${HIPRT_NAME} PRIVATE HIPRT_ENCRYPT)
 	set(ENV{HIPRT_NO_ENCRYPT} "OFF")
