@@ -174,18 +174,24 @@ void Compiler::buildProgram(
 		checkOrortc( orortcAddNameExpression( progOut, funcNames[i] ) );
 
 	orortcResult e = orortcCompileProgram( progOut, static_cast<int>( options.size() ), options.data() );
+
+	// Logging possible compiler warnings or errors
+	size_t logSize;
+	checkOrortc( orortcGetProgramLogSize( progOut, &logSize ) );
+
+	if ( logSize )
+	{
+		std::string log( logSize, '\0' );
+		checkOrortc( orortcGetProgramLog( progOut, &log[0] ) );
+
+		if (log[0] != '\0')
+			std::cout << log << '\n';
+	}
+
 	if ( e != ORORTC_SUCCESS )
 	{
-		size_t logSize;
-		checkOrortc( orortcGetProgramLogSize( progOut, &logSize ) );
-
-		if ( logSize )
-		{
-			std::string log( logSize, '\0' );
-			checkOrortc( orortcGetProgramLog( progOut, &log[0] ) );
-			std::cout << log << '\n';
-			throw std::runtime_error( "Runtime compilation failed" );
-		}
+		// If there was an error, not just warnings
+		throw std::runtime_error( "Runtime compilation failed" );
 	}
 }
 
