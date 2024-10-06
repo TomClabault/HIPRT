@@ -556,7 +556,8 @@ HIPRT_API hiprtError hiprtBuildTraceKernels(
 	hiprtApiFunction* functionsOut,
 	hiprtApiModule*	  moduleOut,
 	bool				cache,
-	const std::string&	additional_cache_key = "");
+	const std::string&	additional_cache_key = "",
+	bool				print_compilation_warnings = false);
 
 /** \brief Get function instance with HIPRT routines.
  * \param context The HIPRT API context.
