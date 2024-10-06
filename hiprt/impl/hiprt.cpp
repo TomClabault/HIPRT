@@ -629,7 +629,8 @@ hiprtError hiprtBuildTraceKernels(
 	hiprtApiFunction*	functionsOut,
 	hiprtApiModule*		moduleOut,
 	bool				cache,
-	const std::string&	additional_cache_key)
+	const std::string&	additional_cache_key,
+	bool				print_compilation_warnings)
 {
 	if ( !context || moduleName == nullptr || src == nullptr ||
 		 ( ( funcNamesIn == nullptr || functionsOut == nullptr || numFunctions == 0 ) && moduleOut == nullptr ) )

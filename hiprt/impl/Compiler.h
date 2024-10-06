@@ -59,7 +59,8 @@ class Compiler
 		uint32_t							 numGeomTypes,
 		uint32_t							 numRayTypes,
 		const std::vector<hiprtFuncNameSet>& funcNameSets,
-		orortcProgram&						 progOut );
+		orortcProgram&						 progOut,
+		bool								 print_compilation_warnings );
 
 	void buildKernels(
 		Context&							 context,
@@ -76,7 +77,8 @@ class Compiler
 		oroModule&							 module,
 		bool								 extended,
 		bool								 cache,
-		std::string							 additional_cache_key = "");
+		std::string							 additional_cache_key = "",
+		bool								 print_compilation_warnings = false);
 
 	void buildKernelsFromBitcode(
 		Context&							 context,

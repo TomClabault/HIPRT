@@ -160,7 +160,8 @@ void Compiler::buildProgram(
 	uint32_t							 numGeomTypes,
 	uint32_t							 numRayTypes,
 	const std::vector<hiprtFuncNameSet>& funcNameSets,
-	orortcProgram&						 progOut )
+	orortcProgram&						 progOut,
+	bool								 print_compilation_warnings = false)
 {
 	checkOrortc( orortcCreateProgram(
 		&progOut,
@@ -179,7 +180,7 @@ void Compiler::buildProgram(
 	size_t logSize;
 	checkOrortc( orortcGetProgramLogSize( progOut, &logSize ) );
 
-	if ( logSize )
+	if ( logSize && (print_compilation_warnings || e != ORORTC_SUCCESS))
 	{
 		std::string log( logSize, '\0' );
 		checkOrortc( orortcGetProgramLog( progOut, &log[0] ) );
@@ -210,7 +211,8 @@ void Compiler::buildKernels(
 	oroModule&							 module,
 	bool								 extended,
 	bool								 cache,
-	std::string							 additional_cache_key)
+	std::string							 additional_cache_key,
+	bool								 print_compilation_warnings)
 {
 	if ( !std::filesystem::exists( m_cacheDirectory ) && !std::filesystem::create_directory( m_cacheDirectory ) )
 		throw std::runtime_error( "Cannot create cache directory" );
@@ -292,7 +294,8 @@ void Compiler::buildKernels(
 				numGeomTypes,
 				numRayTypes,
 				funcNameSets,
-				prog );
+				prog,
+				print_compilation_warnings );
 
 			size_t binarySize = 0;
 			checkOrortc( orortcGetCodeSize( prog, &binarySize ) );
