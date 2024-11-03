@@ -132,7 +132,7 @@ class Compiler
 	std::string buildFunctionTableBitcode(
 		Context& context, uint32_t numGeomTypes, uint32_t numRayTypes, const std::vector<hiprtFuncNameSet>& funcNameSets );
 
-	std::filesystem::path m_cacheDirectory = "cache";
+	std::filesystem::path m_cacheDirectory = "shader_cache";
 
 	std::mutex					  m_kernelMutex;
 	std::map<std::string, Kernel> m_kernelCache;

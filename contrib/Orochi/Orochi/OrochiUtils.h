@@ -161,7 +161,7 @@ class OrochiUtils
 	}
 
   public:
-	std::string m_cacheDirectory = "./cache/";
+	std::string m_cacheDirectory = "./shader_cache/";
 	std::recursive_mutex m_mutex;
 
 	struct FunctionModule {
