@@ -93,7 +93,9 @@
 
 #define HIPRT_HOST __host__
 #define HIPRT_DEVICE __device__
+#ifndef HIPRT_HOST_DEVICE
 #define HIPRT_HOST_DEVICE __host__ __device__
+#endif
 
 #if defined( HIPRT_BAKE_KERNEL_GENERATED )
 #define GET_ARGS( X ) ( hip::X##Args )
@@ -199,7 +201,7 @@ constexpr HIPRT_HOST_DEVICE T DivideRoundUp( T value, U factor )
 }
 
 template <typename T>
-constexpr HIPRT_HOST_DEVICE T Log2( T n )
+constexpr HIPRT_HOST T Log2( T n )
 {
 	return n <= 1 ? 0 : 1 + Log2( ( n + 1 ) / 2 );
 }

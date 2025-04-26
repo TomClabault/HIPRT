@@ -555,6 +555,8 @@ void Compiler::addCustomFuncsSwitchCase(
 	intersectFuncDef += "\t\t default: { return false; }\n\t}\n}\n";
 	filterFuncDef += "\t\t default: { return false; }\n\t}\n}\n";
 	extSrc += "\n" + funcDecls + "\n" + intersectFuncDef + "\n" + filterFuncDef;
+
+	std::cout << std::endl << std::endl << "Here: " << funcDecls + "\n" + intersectFuncDef + "\n" + filterFuncDef << std::endl << std::endl << std::endl;
 }
 
 std::filesystem::path Compiler::getBitcodePath( bool amd )
