@@ -110,15 +110,24 @@
 #endif
 
 #if defined( __KERNELCC_RTC__ )
+#if defined( __CUDACC_RTC__ ) || HIP_VERSION_MAJOR < 7
 using int8_t   = char;
 using uint8_t  = unsigned char;
 using int16_t  = short;
 using uint16_t = unsigned short;
-#if defined( __CUDACC_RTC__ )
 using int32_t  = int;
 using uint32_t = unsigned int;
 using int64_t  = long long;
 using uint64_t = unsigned long long;
+#else
+using int8_t   = __hip_internal::int8_t;
+using uint8_t  = __hip_internal::uint8_t;
+using int16_t  = __hip_internal::int16_t;
+using uint16_t = __hip_internal::uint16_t;
+using int32_t  = __hip_internal::int32_t;
+using uint32_t = __hip_internal::uint32_t;
+using int64_t  = __hip_internal::int64_t;
+using uint64_t = __hip_internal::uint64_t;
 #endif
 #endif
 
