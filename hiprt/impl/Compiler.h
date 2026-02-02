@@ -70,7 +70,8 @@ class Compiler
 		std::vector<oroFunction>&			 functions,
 		oroModule&							 module,
 		bool								 extended,
-		bool								 cache );
+		bool								 cache,
+		const std::string&					 additionalCacheKey = "" );
 
 	void buildKernelsFromBitcode(
 		Context&							 context,
@@ -110,10 +111,11 @@ class Compiler
 		Context&									 context,
 		const std::string&							 src,
 		const std::filesystem::path&				 moduleName,
-		std::optional<std::vector<const char*>>		 options	  = std::nullopt,
-		std::optional<std::vector<hiprtFuncNameSet>> funcNameSets = std::nullopt,
-		uint32_t									 numGeomTypes = 0,
-		uint32_t									 numRayTypes  = 1 );
+		std::optional<std::vector<const char*>>		 options			= std::nullopt,
+		std::optional<std::vector<hiprtFuncNameSet>> funcNameSets		= std::nullopt,
+		uint32_t									 numGeomTypes		= 0,
+		uint32_t									 numRayTypes		= 1,
+		const std::string&							 additionalCacheKey = "" );
 
 	std::string loadCacheFileToBinary( const std::string& cacheName, const std::string& deviceName );
 

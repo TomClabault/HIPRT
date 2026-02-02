@@ -50,19 +50,19 @@ namespace
 #if defined( HIPRT_BITCODE_LINKING )
 constexpr auto UseBitcode = true;
 #else
-constexpr auto		 UseBitcode							 = false;
+constexpr auto UseBitcode = false;
 #endif
 
 #if defined( HIPRT_LOAD_FROM_STRING )
 constexpr auto UseBakedCode = true;
 #else
-constexpr auto		 UseBakedCode						 = false;
+constexpr auto UseBakedCode = false;
 #endif
 
 #if defined( HIPRT_BAKE_KERNEL_GENERATED )
 constexpr auto BakedCodeIsGenerated = true;
 #else
-constexpr auto		 BakedCodeIsGenerated				 = false;
+constexpr auto BakedCodeIsGenerated = false;
 #endif
 HIPRT_STATIC_ASSERT( !UseBakedCode || BakedCodeIsGenerated );
 } // namespace
@@ -242,21 +242,22 @@ void Compiler::buildKernels(
 	std::vector<oroFunction>&			 functions,
 	oroModule&							 module,
 	bool								 extended,
-	bool								 cache )
+	bool								 cache,
+	const std::string&					 additionalCacheKey )
 {
 	if ( !std::filesystem::exists( m_cacheDirectory ) && !std::filesystem::create_directory( m_cacheDirectory ) )
 		throw std::runtime_error( "Cannot create cache directory" );
 
 	std::lock_guard<std::mutex> lock( m_moduleMutex );
-	auto						cacheEntry = m_moduleCache.find( moduleName.string() );
+	/*auto						cacheEntry = m_moduleCache.find( moduleName.string() );
 	if ( cacheEntry != m_moduleCache.end() )
 	{
 		module = cacheEntry->second;
 	}
-	else
+	else*/
 	{
 		const std::string cacheName =
-			getCacheFilename( context, src, moduleName, options, funcNameSets, numGeomTypes, numRayTypes );
+			getCacheFilename( context, src, moduleName, options, funcNameSets, numGeomTypes, numRayTypes, additionalCacheKey );
 		const bool upToDate = isCachedFileUpToDate( m_cacheDirectory / cacheName, moduleName );
 
 		orortcProgram prog;
@@ -542,7 +543,7 @@ std::filesystem::path Compiler::getBitcodePath( bool amd )
 #if !defined( __GNUC__ )
 		filename += "_amd_lib_win.bc";
 #else
-		 filename += "_amd_lib_linux.bc";
+		filename += "_amd_lib_linux.bc";
 #endif
 	else
 		filename += "_nv_lib.fatbin";
@@ -630,7 +631,8 @@ std::string Compiler::getCacheFilename(
 	std::optional<std::vector<const char*>>		 options,
 	std::optional<std::vector<hiprtFuncNameSet>> funcNameSets,
 	uint32_t									 numGeomTypes,
-	uint32_t									 numRayTypes )
+	uint32_t									 numRayTypes,
+	const std::string&							 additionalCacheKey )
 {
 	std::string driverVersion = context.getDriverVersion();
 	std::string deviceName	  = context.getDeviceName();
@@ -653,6 +655,8 @@ std::string Compiler::getCacheFilename(
 			}
 		}
 	}
+
+	optionHash += additionalCacheKey;
 
 	if ( options )
 	{

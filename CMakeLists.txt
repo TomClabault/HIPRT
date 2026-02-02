@@ -352,7 +352,6 @@ set(version_str_ "UNDEF")
 write_version_info("${CMAKE_CURRENT_SOURCE_DIR}/hiprt/hiprt.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/hiprt/hiprt.h" "${CMAKE_CURRENT_SOURCE_DIR}/version.txt" version_str_)
 write_version_info("${CMAKE_CURRENT_SOURCE_DIR}/hiprt/hiprtew.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/hiprt/hiprtew.h" "${CMAKE_CURRENT_SOURCE_DIR}/version.txt" version_str_)
 
-
 set(HIPRT_NAME "hiprt${version_str_}")
 
 # Project: HIPRT
@@ -720,3 +719,14 @@ if(HIPRTEW)
 
 	target_compile_definitions(hiprtewtest PRIVATE GTEST_HAS_TR1_TUPLE=0)
 endif()
+
+if(MSVC_IDE)
+	# Enabling parallel compilation on MSVC which isn't enabled by default
+	if(MSVC)
+		add_definitions(/MP)
+	endif()
+endif()
+
+# To fix issue #7: https://github.com/GPUOpen-LibrariesAndSDKs/HIPRT/issues/7. This constant is used in Utility::getRootDir
+#But this fix actually doesn't work and we get some weird "Checksum is zero" issues when compiling the BVH building kernels 
+# add_compile_definitions(HIPRT_ROOT_DIRECTORY="${CMAKE_CURRENT_SOURCE_DIR}")

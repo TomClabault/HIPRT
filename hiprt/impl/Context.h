@@ -24,6 +24,7 @@
 
 #pragma once
 #include <Orochi/Orochi.h>
+#include <hiprt/hiprt.h>
 #include <hiprt/hiprt_types.h>
 #include <hiprt/impl/Compiler.h>
 #include <hiprt/impl/Error.h>
@@ -114,7 +115,8 @@ class Context
 		const std::vector<hiprtFuncNameSet>& funcNameSets,
 		std::vector<oroFunction>&			 functions,
 		oroModule&							 module,
-		bool								 cache );
+		bool								 cache,
+		const std::string&					 additionalCacheKey );
 
 	void buildKernelsFromBitcode(
 		const std::vector<const char*>&		 funcNames,

@@ -903,7 +903,8 @@ void Context::buildKernels(
 	const std::vector<hiprtFuncNameSet>& funcNameSets,
 	std::vector<oroFunction>&			 functions,
 	oroModule&							 module,
-	bool								 cache )
+	bool								 cache,
+	const std::string&					 additionalCacheKey )
 {
 	checkOro( oroCtxSetCurrent( m_ctxt ) );
 	m_compiler.buildKernels(
@@ -920,7 +921,8 @@ void Context::buildKernels(
 		functions,
 		module,
 		true,
-		cache );
+		cache,
+		additionalCacheKey );
 }
 
 void Context::buildKernelsFromBitcode(
@@ -1021,14 +1023,16 @@ uint32_t Context::getRtip() const
 			const bool rtcRtip31 = m_compiler.isRtip31Supported();
 #if defined( __WINDOWS__ )
 			if ( driverRtip31 && !rtcRtip31 )
-				logWarn( "The driver supports RTIP 3.1 but HIPRTC DLLs are of an older version; use HIPRTC DLLs 6.4+ to fully "
-						 "utilize "
-						 "HW ray tracing features\n" );
+				logWarn(
+					"The driver supports RTIP 3.1 but HIPRTC DLLs are of an older version; use HIPRTC DLLs 6.4+ to fully "
+					"utilize "
+					"HW ray tracing features\n" );
 #else
 			if ( !driverRtip31 )
-				logWarn( "HW supports RTIP 3.1 but the driver is of an older version; use driver ROCm 6.4+ (Win) or 7.0+ "
-						 "(Linux) to fully "
-						 "utilize HW ray tracing features\n" );
+				logWarn(
+					"HW supports RTIP 3.1 but the driver is of an older version; use driver ROCm 6.4+ (Win) or 7.0+ "
+					"(Linux) to fully "
+					"utilize HW ray tracing features\n" );
 #endif
 
 			if ( driverRtip31 && rtcRtip31 )
