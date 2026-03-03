@@ -653,6 +653,7 @@ void hipewInit( int* resultDriver, int* resultRtc, uint32_t flags, const char** 
   const char *hip_paths[] = { 
 
       // we first try the specific versions
+      "/opt/rocm-7.2.0/lib/libamdhip64.so.7",
       "/opt/rocm/hip/lib/libamdhip64.so.7",
       "/opt/rocm/lib/libamdhip64.so.7", 
       "libamdhip64.so.7",
@@ -675,6 +676,7 @@ void hipewInit( int* resultDriver, int* resultRtc, uint32_t flags, const char** 
   const char* hiprtc_paths[] = { 
 
       // we first try the specific versions
+      "/opt/rocm-7.2.0/lib/libhiprtc.so.7",
       "/opt/rocm/hip/lib/libhiprtc.so.7",
       "/opt/rocm/lib/libhiprtc.so.7", 
       "libhiprtc.so.7",
