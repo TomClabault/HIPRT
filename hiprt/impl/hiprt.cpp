@@ -95,6 +95,9 @@ hiprtError hiprtCreateGeometries(
 	catch ( std::exception& e )
 	{
 		reinterpret_cast<Context*>( context )->logError( e.what() );
+		if ( std::string_view( e.what() ).find( "out of memory" ) != std::string_view::npos )
+			return hiprtErrorOutOfDeviceMemory;
+
 		return hiprtErrorInternal;
 	}
 	return hiprtSuccess;
