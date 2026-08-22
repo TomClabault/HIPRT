@@ -529,7 +529,7 @@ void Compiler::addCommonOpts( Context& context, std::vector<const char*>& opts, 
 	}
 
 	opts.push_back( "-D__USE_HIP__" );
-	opts.push_back( "-std=c++17" );
+	opts.push_back( "-std=c++20" );
 }
 
 std::filesystem::path Compiler::getBitcodePath( bool amd )
