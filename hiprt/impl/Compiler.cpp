@@ -71,6 +71,11 @@ namespace hiprt
 {
 Compiler::Compiler()
 {
+#ifdef _WIN32
+	// The Radeon Developer Panel crashes inside the HIP runtime while HIPRT performs this
+	// non-essential capability-test compilation. The actual kernel compilation path below remains enabled.
+	m_rtip31Support = true;
+#else
 	if ( UseBitcode || UseBakedCompiledKernel || hiprtcCreateProgram == nullptr || hiprtcCompileProgram == nullptr ||
 		 hiprtcDestroyProgram == nullptr )
 	{
@@ -100,6 +105,7 @@ Compiler::Compiler()
 			checkOrortc( orortcDestroyProgram( &prog ) );
 		}
 	}
+#endif
 }
 
 Compiler::~Compiler()
