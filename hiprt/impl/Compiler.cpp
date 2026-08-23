@@ -245,10 +245,11 @@ void Compiler::buildKernels(
 	bool								 cache,
 	const std::string&					 additionalCacheKey )
 {
-	if ( !std::filesystem::exists( m_cacheDirectory ) && !std::filesystem::create_directory( m_cacheDirectory ) )
+	if ( !std::filesystem::exists( m_cacheDirectory ) && !std::filesystem::create_directory( m_cacheDirectory ) &&
+		 !std::filesystem::exists( m_cacheDirectory ) )
 		throw std::runtime_error( "Cannot create cache directory" );
 
-	std::lock_guard<std::mutex> lock( m_moduleMutex );
+	std::unique_lock<std::mutex> lock( m_moduleMutex, std::defer_lock );
 	/*auto						cacheEntry = m_moduleCache.find( moduleName.string() );
 	if ( cacheEntry != m_moduleCache.end() )
 	{
@@ -258,7 +259,12 @@ void Compiler::buildKernels(
 	{
 		const std::string cacheName =
 			getCacheFilename( context, src, moduleName, options, funcNameSets, numGeomTypes, numRayTypes, additionalCacheKey );
-		const bool upToDate = isCachedFileUpToDate( m_cacheDirectory / cacheName, moduleName );
+		bool upToDate = isCachedFileUpToDate( m_cacheDirectory / cacheName, moduleName );
+		if ( !upToDate || !cache )
+		{
+			lock.lock();
+			upToDate = isCachedFileUpToDate( m_cacheDirectory / cacheName, moduleName );
+		}
 
 		orortcProgram prog;
 		std::string	  binary;
@@ -323,8 +329,13 @@ void Compiler::buildKernels(
 			checkOrortc( orortcDestroyProgram( &prog ) );
 		}
 
+		if ( lock.owns_lock() ) lock.unlock();
+
 		checkOro( oroModuleLoadData( &module, binary.data() ) );
-		m_moduleCache[moduleName.string()] = module;
+		{
+			std::lock_guard<std::mutex> cache_lock( m_moduleMutex );
+			m_moduleCache[moduleName.string()] = module;
+		}
 	}
 
 	for ( size_t i = 0; i < funcNames.size(); ++i )
