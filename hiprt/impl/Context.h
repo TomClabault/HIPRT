@@ -116,6 +116,7 @@ class Context
 		std::vector<oroFunction>&			 functions,
 		oroModule&							 module,
 		bool								 cache,
+		bool loadKernel,
 		const std::string&					 additionalCacheKey );
 
 	void buildKernelsFromBitcode(

@@ -156,6 +156,7 @@ Kernel Compiler::getKernel(
 				functions,
 				module,
 				false,
+				true,
 				true );
 		}
 		else
@@ -183,6 +184,7 @@ Kernel Compiler::getKernel(
 				functions,
 				module,
 				false,
+				true,
 				true );
 		}
 		function = functions.back();
@@ -243,6 +245,7 @@ void Compiler::buildKernels(
 	oroModule&							 module,
 	bool								 extended,
 	bool								 cache,
+	bool loadKernel,
 	const std::string&					 additionalCacheKey )
 {
 	if ( !std::filesystem::exists( m_cacheDirectory ) && !std::filesystem::create_directory( m_cacheDirectory ) &&
@@ -270,6 +273,11 @@ void Compiler::buildKernels(
 		std::string	  binary;
 		if ( upToDate && cache )
 		{
+			if ( !loadKernel )
+			{
+				if ( lock.owns_lock() ) lock.unlock();
+				return;
+			}
 			binary = loadCacheFileToBinary( cacheName, context.getDeviceName() );
 		}
 		else
@@ -330,6 +338,7 @@ void Compiler::buildKernels(
 		}
 
 		if ( lock.owns_lock() ) lock.unlock();
+		if ( !loadKernel ) return;
 
 		checkOro( oroModuleLoadData( &module, binary.data() ) );
 		{

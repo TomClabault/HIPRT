@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include <string>
+
 #define HIPRT_MAJOR_VERSION @HIPRT_MAJOR_VERSION@
 #define HIPRT_MINOR_VERSION @HIPRT_MINOR_VERSION@
 #define HIPRT_PATCH_VERSION @HIPRT_PATCH_VERSION@
@@ -238,7 +240,9 @@ using thiprtBuildTraceKernels = hiprtError HIPRTAPI(
 	hiprtFuncNameSet* funcNameSets,
 	hiprtApiFunction* functionsOut,
 	hiprtApiModule*	  moduleOut,
-	bool			  cache );
+	bool			  cache,
+	const std::string& additionalCacheKey,
+	bool			  loadKernel );
 
 using thiprtBuildTraceKernelsFromBitcode = hiprtError HIPRTAPI(
 	hiprtContext	  context,

@@ -904,6 +904,7 @@ void Context::buildKernels(
 	std::vector<oroFunction>&			 functions,
 	oroModule&							 module,
 	bool								 cache,
+	bool loadKernel,
 	const std::string&					 additionalCacheKey )
 {
 	checkOro( oroCtxSetCurrent( m_ctxt ) );
@@ -922,6 +923,7 @@ void Context::buildKernels(
 		module,
 		true,
 		cache,
+		loadKernel,
 		additionalCacheKey );
 }
 

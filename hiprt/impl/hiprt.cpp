@@ -640,10 +640,11 @@ hiprtError hiprtBuildTraceKernels(
 	hiprtApiFunction*  functionsOut,
 	hiprtApiModule*	   moduleOut,
 	bool			   cache,
-	const std::string& additionalCacheKey )
+	const std::string& additionalCacheKey,
+	bool			   loadKernel )
 {
-	if ( !context || moduleName == nullptr || src == nullptr ||
-		 ( ( funcNamesIn == nullptr || functionsOut == nullptr || numFunctions == 0 ) && moduleOut == nullptr ) )
+	if ( !context || moduleName == nullptr || src == nullptr || funcNamesIn == nullptr || numFunctions == 0 ||
+		 ( loadKernel && functionsOut == nullptr && moduleOut == nullptr ) )
 		return hiprtErrorInvalidParameter;
 
 	try
@@ -687,12 +688,16 @@ hiprtError hiprtBuildTraceKernels(
 			functions,
 			module,
 			cache,
+			loadKernel,
 			additionalCacheKey );
 
-		for ( uint32_t i = 0; i < numFunctions; ++i )
-			functionsOut[i] = reinterpret_cast<hiprtApiFunction>( functions[i] );
+		if ( loadKernel )
+		{
+			for ( uint32_t i = 0; i < numFunctions; ++i )
+				functionsOut[i] = reinterpret_cast<hiprtApiFunction>( functions[i] );
 
-		if ( moduleOut != nullptr ) *moduleOut = reinterpret_cast<hiprtApiModule>( module );
+			if ( moduleOut != nullptr ) *moduleOut = reinterpret_cast<hiprtApiModule>( module );
+		}
 	}
 	catch ( std::exception& e )
 	{

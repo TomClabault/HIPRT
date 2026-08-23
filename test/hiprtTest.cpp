@@ -919,6 +919,7 @@ hiprtError hiprtTest::buildTraceKernels(
 		funcNameSets ? funcNameSets.value().data() : nullptr,
 		functionsOut.data(),
 		nullptr,
+		"",
 		true );
 }
 

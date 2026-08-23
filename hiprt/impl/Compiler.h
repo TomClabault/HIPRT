@@ -71,6 +71,7 @@ class Compiler
 		oroModule&							 module,
 		bool								 extended,
 		bool								 cache,
+		bool loadKernel,
 		const std::string&					 additionalCacheKey = "" );
 
 	void buildKernelsFromBitcode(
