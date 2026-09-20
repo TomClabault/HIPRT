@@ -251,12 +251,17 @@ void Compiler::buildKernels(
 	oroModule&							 module,
 	bool								 extended,
 	bool								 cache,
-	bool loadKernel,
+	bool								 loadKernel,
 	const std::string&					 additionalCacheKey )
 {
 	if ( !std::filesystem::exists( m_cacheDirectory ) && !std::filesystem::create_directory( m_cacheDirectory ) &&
 		 !std::filesystem::exists( m_cacheDirectory ) )
 		throw std::runtime_error( "Cannot create cache directory" );
+
+	// Keep the generated option alive through compilation and include it in the cache key.
+	std::vector<const char*> opts				   = options;
+	std::string				 gpuArchitectureOption = getGpuArchitectureOption( context, opts );
+	if ( !gpuArchitectureOption.empty() ) opts.push_back( gpuArchitectureOption.c_str() );
 
 	std::unique_lock<std::mutex> lock( m_moduleMutex, std::defer_lock );
 	/*auto						cacheEntry = m_moduleCache.find( moduleName.string() );
@@ -267,7 +272,7 @@ void Compiler::buildKernels(
 	else*/
 	{
 		const std::string cacheName =
-			getCacheFilename( context, src, moduleName, options, funcNameSets, numGeomTypes, numRayTypes, additionalCacheKey );
+			getCacheFilename( context, src, moduleName, opts, funcNameSets, numGeomTypes, numRayTypes, additionalCacheKey );
 		bool upToDate = isCachedFileUpToDate( m_cacheDirectory / cacheName, moduleName );
 		if ( !upToDate || !cache )
 		{
@@ -327,8 +332,7 @@ void Compiler::buildKernels(
 				}
 			}
 
-			std::vector<const char*> opts		 = options;
-			std::string				 includePath = "-I" + Utility::getRootDir().string();
+			std::string includePath = "-I" + Utility::getRootDir().string();
 			opts.push_back( includePath.c_str() );
 			addCommonOpts( context, opts, extended );
 
@@ -556,6 +560,28 @@ void Compiler::addCommonOpts( Context& context, std::vector<const char*>& opts, 
 
 	opts.push_back( "-D__USE_HIP__" );
 	opts.push_back( "-std=c++20" );
+}
+
+std::string Compiler::getGpuArchitectureOption( Context& context, const std::vector<const char*>& options )
+{
+	if ( oroGetCurAPI( 0 ) != ORO_API_HIP ) return "";
+
+	for ( const char* option : options )
+	{
+		std::string optionString = option;
+		if ( optionString == "--gpu-architecture" || optionString.rfind( "--gpu-architecture=", 0 ) == 0 ||
+			 optionString == "--offload-arch" || optionString.rfind( "--offload-arch=", 0 ) == 0 || optionString == "-arch" ||
+			 optionString.rfind( "-arch=", 0 ) == 0 )
+			return "";
+	}
+
+	// Without an explicit target, HIPRTC loads a runtime to discover the architecture, then unloads it.
+	// With Radeon Developer Panel connected, that teardown can leave a HIP worker accessing freed memory.
+	// Query the already-selected context through Orochi instead, including for internal BVH kernels.
+	std::string architecture = context.getGcnArchName();
+	if ( architecture.empty() ) throw std::runtime_error( "Cannot determine the HIPRTC GPU architecture" );
+
+	return "--gpu-architecture=" + architecture;
 }
 
 std::filesystem::path Compiler::getBitcodePath( bool amd )
@@ -852,6 +878,8 @@ std::string Compiler::buildFunctionTableBitcode(
 		std::string				 includePath = "-I" + Utility::getRootDir().string();
 		options.push_back( includePath.c_str() );
 		addCommonOpts( context, options, false );
+		std::string gpuArchitectureOption = getGpuArchitectureOption( context, options );
+		if ( !gpuArchitectureOption.empty() ) options.push_back( gpuArchitectureOption.c_str() );
 
 		if ( amd )
 		{

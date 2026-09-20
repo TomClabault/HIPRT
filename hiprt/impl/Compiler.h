@@ -71,7 +71,7 @@ class Compiler
 		oroModule&							 module,
 		bool								 extended,
 		bool								 cache,
-		bool loadKernel,
+		bool								 loadKernel,
 		const std::string&					 additionalCacheKey = "" );
 
 	void buildKernelsFromBitcode(
@@ -106,7 +106,8 @@ class Compiler
 		uint32_t									 numGeomTypes = 0,
 		uint32_t									 numRayTypes  = 1 );
 
-	void addCommonOpts( Context& context, std::vector<const char*>& opts, bool extended );
+	void		addCommonOpts( Context& context, std::vector<const char*>& opts, bool extended );
+	std::string getGpuArchitectureOption( Context& context, const std::vector<const char*>& options );
 
 	std::string getCacheFilename(
 		Context&									 context,
