@@ -68,6 +68,12 @@ HIPRT_DEVICE bool filterFunc(
 
 namespace hiprt
 {
+#if defined( __AMDGCN__ )
+// AMDGPU address space 3 = LDS / shared memory; address space 1 = global memory.
+using HiprtSharedStackU32 = uint32_t __attribute__( ( address_space( 3 ) ) );
+using HiprtGlobalStackU32 = uint32_t __attribute__( ( address_space( 1 ) ) );
+#endif
+
 enum
 {
 	Triangle0Processed = 1,
@@ -193,13 +199,35 @@ HIPRT_DEVICE HIPRT_INLINE StackEntry GlobalStack<StackEntry, DynamicAssignment>:
 {
 	if ( m_sharedCount > 0 )
 	{
-		m_sharedCount--;
+		--m_sharedCount;
 		if ( --m_sharedIndex < 0 ) m_sharedIndex += m_sharedStackSize;
-		return m_sharedStackBuffer[m_sharedIndex << LogStride];
+		const uint32_t index = static_cast<uint32_t>( m_sharedIndex ) << LogStride;
+
+#if defined( __AMDGCN__ )
+		if constexpr ( is_same<StackEntry, uint32_t>::value )
+		{
+			// Cast only at the access to preserve GlobalStack's fixed-size pimpl ABI.
+			// C-style casts permit address-space conversion; reinterpret_cast does not.
+			const HiprtSharedStackU32* sharedBuffer = (const HiprtSharedStackU32*)m_sharedStackBuffer;
+			return sharedBuffer[index];
+		}
+#endif
+
+		return m_sharedStackBuffer[index];
 	}
 	else
 	{
-		return m_globalStackBuffer[--m_globalIndex << LogStride];
+		const uint32_t index = static_cast<uint32_t>( --m_globalIndex ) << LogStride;
+
+#if defined( __AMDGCN__ )
+		if constexpr ( is_same<StackEntry, uint32_t>::value )
+		{
+			const HiprtGlobalStackU32* globalBuffer = (const HiprtGlobalStackU32*)m_globalStackBuffer;
+			return globalBuffer[index];
+		}
+#endif
+
+		return m_globalStackBuffer[index];
 	}
 }
 
@@ -372,15 +400,15 @@ HIPRT_DEVICE bool TraversalBase<Stack, TraversalType>::testInternalNode(
 #elif HIPRT_RTIP >= 31
 	hip_float3 dummy0, dummy1;
 	auto	   result = __builtin_amdgcn_image_bvh8_intersect_ray(
-		  encodeBaseAddr( nodes ),
-		  ray.maxT,
-		  0xff,
-		  { ray.origin.x, ray.origin.y, ray.origin.z },
-		  { ray.direction.x, ray.direction.y, ray.direction.z },
-		  nodeIndex,
-		  { m_descriptor.x, m_descriptor.y, m_descriptor.z, m_descriptor.w },
-		  &dummy0,
-		  &dummy1 );
+		encodeBaseAddr( nodes ),
+		ray.maxT,
+		0xff,
+		{ ray.origin.x, ray.origin.y, ray.origin.z },
+		{ ray.direction.x, ray.direction.y, ray.direction.z },
+		nodeIndex,
+		{ m_descriptor.x, m_descriptor.y, m_descriptor.z, m_descriptor.w },
+		&dummy0,
+		&dummy1 );
 #else
 	auto result = __builtin_amdgcn_image_bvh_intersect_ray_l(
 		encodeBaseAddr( nodes, nodeIndex ),
@@ -649,15 +677,15 @@ HIPRT_DEVICE uint32_t TraversalBase<Stack, TraversalType>::testTrianglePair(
 
 	hip_float3 dummy0, dummy1;
 	auto	   result = __builtin_amdgcn_image_bvh8_intersect_ray(
-		  encodeBaseAddr( nodes ),
-		  ray.maxT,
-		  0xff,
-		  { ray.origin.x, ray.origin.y, ray.origin.z },
-		  { ray.direction.x, ray.direction.y, ray.direction.z },
-		  encodeNodeIndex( leafAddr, triPairIndexToType( triPairIndex ) ),
-		  { m_descriptor.x, m_descriptor.y, m_descriptor.z, m_descriptor.w },
-		  &dummy0,
-		  &dummy1 );
+		encodeBaseAddr( nodes ),
+		ray.maxT,
+		0xff,
+		{ ray.origin.x, ray.origin.y, ray.origin.z },
+		{ ray.direction.x, ray.direction.y, ray.direction.z },
+		encodeNodeIndex( leafAddr, triPairIndexToType( triPairIndex ) ),
+		{ m_descriptor.x, m_descriptor.y, m_descriptor.z, m_descriptor.w },
+		&dummy0,
+		&dummy1 );
 
 	uint32_t hitMask = 0;
 	{
@@ -968,15 +996,15 @@ HIPRT_DEVICE bool SceneTraversal<Stack, InstanceStack, TraversalType>::transform
 #if HIPRT_RTIP >= 31
 			hip_float3 origin, direction;
 			auto	   result = __builtin_amdgcn_image_bvh8_intersect_ray(
-				  encodeBaseAddr( m_instanceNodes ),
-				  ray.maxT,
-				  0xff,
-				  { ray.origin.x, ray.origin.y, ray.origin.z },
-				  { ray.direction.x, ray.direction.y, ray.direction.z },
-				  nodeIndex,
-				  { m_descriptor.x, m_descriptor.y, m_descriptor.z, m_descriptor.w },
-				  &origin,
-				  &direction );
+				encodeBaseAddr( m_instanceNodes ),
+				ray.maxT,
+				0xff,
+				{ ray.origin.x, ray.origin.y, ray.origin.z },
+				{ ray.direction.x, ray.direction.y, ray.direction.z },
+				nodeIndex,
+				{ m_descriptor.x, m_descriptor.y, m_descriptor.z, m_descriptor.w },
+				&origin,
+				&direction );
 
 			if ( result[7] == InvalidValue ) return false;
 
@@ -1776,9 +1804,9 @@ HIPRT_DEVICE float3 hiprtPointObjectToWorld( const float3& point, hiprtScene sce
 {
 	const hiprt::SceneHeader* sceneHeader = reinterpret_cast<hiprt::SceneHeader*>( scene );
 	const hiprt::Transform	  tr(
-		   sceneHeader->m_frames,
-		   sceneHeader->m_instances[instanceID].m_frameIndex,
-		   sceneHeader->m_instances[instanceID].m_frameCount );
+		sceneHeader->m_frames,
+		sceneHeader->m_instances[instanceID].m_frameIndex,
+		sceneHeader->m_instances[instanceID].m_frameCount );
 	hiprt::Frame frame = tr.interpolateFrames( time );
 	return frame.transform( point );
 }
@@ -1787,9 +1815,9 @@ HIPRT_DEVICE float3 hiprtPointWorldToObject( const float3& point, hiprtScene sce
 {
 	const hiprt::SceneHeader* sceneHeader = reinterpret_cast<hiprt::SceneHeader*>( scene );
 	const hiprt::Transform	  tr(
-		   sceneHeader->m_frames,
-		   sceneHeader->m_instances[instanceID].m_frameIndex,
-		   sceneHeader->m_instances[instanceID].m_frameCount );
+		sceneHeader->m_frames,
+		sceneHeader->m_instances[instanceID].m_frameIndex,
+		sceneHeader->m_instances[instanceID].m_frameCount );
 	hiprt::Frame frame = tr.interpolateFrames( time );
 	return frame.invTransform( point );
 }
@@ -1798,9 +1826,9 @@ HIPRT_DEVICE float3 hiprtVectorObjectToWorld( const float3& vector, hiprtScene s
 {
 	const hiprt::SceneHeader* sceneHeader = reinterpret_cast<hiprt::SceneHeader*>( scene );
 	const hiprt::Transform	  tr(
-		   sceneHeader->m_frames,
-		   sceneHeader->m_instances[instanceID].m_frameIndex,
-		   sceneHeader->m_instances[instanceID].m_frameCount );
+		sceneHeader->m_frames,
+		sceneHeader->m_instances[instanceID].m_frameIndex,
+		sceneHeader->m_instances[instanceID].m_frameCount );
 	hiprt::Frame frame = tr.interpolateFrames( time );
 	return frame.transformVector( vector );
 }
@@ -1809,9 +1837,9 @@ HIPRT_DEVICE float3 hiprtVectorWorldToObject( const float3& vector, hiprtScene s
 {
 	const hiprt::SceneHeader* sceneHeader = reinterpret_cast<hiprt::SceneHeader*>( scene );
 	const hiprt::Transform	  tr(
-		   sceneHeader->m_frames,
-		   sceneHeader->m_instances[instanceID].m_frameIndex,
-		   sceneHeader->m_instances[instanceID].m_frameCount );
+		sceneHeader->m_frames,
+		sceneHeader->m_instances[instanceID].m_frameIndex,
+		sceneHeader->m_instances[instanceID].m_frameCount );
 	hiprt::Frame frame = tr.interpolateFrames( time );
 	return frame.invTransformVector( vector );
 }
